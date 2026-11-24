@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#d9401f">
+<meta name="description" content="Kurze Workouts mit dem eigenen Körpergewicht – Timer, 71 Übungen und 31 Dehnungen.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fit in 15">
+<title>Fit in 15</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: energisch, knapp, wie ein guter Trainer – Duzen, kurze Sätze.
+   IDEA: Tartanbahn & Stoppuhr – rote Bahn = Arbeit, blaues Wasser = Pause.
+   PICTURE: die Strichfigur, die die Übung in Bewegung vormacht, groß im Player.
+   COLOUR and TYPE: Bahnrot, Pausenblau, Signalgelb; Barlow Condensed für Zahlen/Titel, Barlow für Text.
+   LAYOUT: eine Spalte, Einstellungen oben, Plan darunter, Start-Knopf klebt unten; Player im Vollbild. */
+:root{color-scheme:light dark;
+--bg:light-dark(#f6f6f3,#111215);--card:light-dark(#fff,#1b1c21);--ink:light-dark(#15161a,#f2f2ee);
+--mute:light-dark(#5d5f67,#a3a5ad);--line:light-dark(#e2e2dd,#2c2e35);
+--red:light-dark(#d9401f,#ff6447);--blue:light-dark(#18708a,#4db4d2);--yel:#ffd23f;--onred:#fff;--str:light-dark(#6a4fc2,#a893f2)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Barlow,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3,.num{font-family:"Barlow Condensed",Barlow,sans-serif;line-height:1.05;margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
+.top{background:var(--red);color:var(--onred);padding:max(22px,calc(env(safe-area-inset-top) + 10px)) max(5vw,16px,env(safe-area-inset-right)) 26px max(5vw,16px,env(safe-area-inset-left));position:relative;overflow:hidden}
+.top::after{content:"";position:absolute;inset:auto -10% -40px -10%;height:90px;background:repeating-linear-gradient(90deg,transparent 0 46px,rgba(255,255,255,.22) 46px 49px);transform:skewX(-20deg);pointer-events:none}
+.wrap{max-width:760px;margin:0 auto;position:relative;z-index:1}
+.top h1{font-size:clamp(38px,8vw,52px);font-weight:800}
+.top p{margin:4px 0 18px;opacity:.92}
+.tabs{display:flex;gap:6px;margin-bottom:18px}
+.tabs button{border:0;border-radius:999px;padding:10px 18px;min-height:44px;background:rgba(255,255,255,.16);color:#fff;font-weight:600}
+.tabs button[aria-selected=true]{background:#fff;color:var(--red)}
+.set{display:grid;gap:12px}
+.row{display:grid;grid-template-columns:7.5em minmax(0,1fr);align-items:center;gap:10px}
+.row>span{font-weight:600;font-size:15px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{border:2px solid rgba(255,255,255,.5);background:transparent;color:#fff;border-radius:10px;padding:8px 12px;min-height:44px;font-weight:600;white-space:nowrap}
+.seg button[aria-pressed=true]{background:#fff;color:var(--red);border-color:#fff}
+main{padding:20px max(5vw,16px) 120px}
+.sum{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:baseline;margin-bottom:14px}
+.sum h2{font-size:32px}
+.sum .mute{color:var(--mute)}
+.ghost{border:2px solid var(--line);background:var(--card);border-radius:10px;padding:8px 14px;min-height:44px;font-weight:600}
+ol.plan{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.plan li{display:grid;grid-template-columns:2em 72px minmax(0,1fr) auto;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px 10px 6px 12px}
+.plan .n{font-family:"Barlow Condensed";font-size:22px;font-weight:700;color:var(--mute)}
+.plan .f{width:72px;height:60px;color:var(--ink)}
+.plan b{display:block;font-weight:600;font-size:17px;line-height:1.2}
+.plan small,.card small{color:var(--mute);font-size:14px}
+.plan .open{border:0;background:none;text-align:left;padding:4px 0;min-height:44px}
+.swap{border:0;background:none;width:44px;height:44px;border-radius:10px;color:var(--mute);font-size:22px}
+.swap:hover{background:var(--line)}
+.plan li.sec{display:block;background:none;border:0;padding:14px 0 2px}
+.plan li.sec h3{font-size:26px;color:var(--str)}
+.plan li.sec small{display:block}
+.plan li.st .n{color:var(--str)}
+.go{position:fixed;left:0;right:0;bottom:0;padding:12px max(5vw,16px) calc(12px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 30%);z-index:5}
+.go button{display:block;width:100%;max-width:760px;margin:0 auto;border:0;border-radius:16px;background:var(--ink);color:var(--bg);min-height:60px;font:700 24px "Barlow Condensed";letter-spacing:.02em}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.chips button{border:2px solid var(--line);background:var(--card);border-radius:999px;padding:6px 14px;min-height:44px;font-weight:600}
+.chips button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;position:relative}
+.card .open-card{border:0;background:none;padding:10px 12px 12px;text-align:left;display:block;width:100%}
+.like{border:0;background:none;width:44px;height:44px;border-radius:50%;font-size:22px;line-height:1;color:var(--mute)}
+.like[aria-pressed=true]{color:var(--red)}
+.like:hover{background:var(--line)}
+.card .like{position:absolute;top:4px;right:4px}
+.empty{color:var(--mute);padding:30px 0;grid-column:1/-1}
+#pl .nm{display:flex;align-items:center;gap:6px}
+.card .f{height:110px;width:100%}
+.card b{display:block;font-size:17px;font-weight:600;line-height:1.2;margin-top:4px}
+.dots{color:var(--red);letter-spacing:2px;font-size:12px}
+.f{display:block}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center;z-index:20;padding:12px}
+.modal.on{display:flex}
+.sheet{background:var(--card);border-radius:20px;max-width:560px;width:100%;max-height:92vh;overflow:auto;padding:18px 20px 22px}
+.sheet .f{height:220px;width:100%;background:var(--bg);border-radius:14px}
+.sheet h3{font-size:32px;margin:14px 0 2px}
+.sheet ol{padding-left:1.3em;margin:10px 0}
+.tip{background:light-dark(#fff6d1,#3a3313);border-radius:10px;padding:10px 12px;font-size:15px}
+.x{float:right;border:0;background:var(--bg);border-radius:50%;width:44px;height:44px;font-size:22px;line-height:1}
+/* Player */
+#pl{position:fixed;inset:0;z-index:30;display:none;flex-direction:column;background:var(--bg);padding:max(12px,env(safe-area-inset-top)) max(4vw,14px) max(14px,env(safe-area-inset-bottom))}
+#pl.on{display:flex}
+#pl .bar{display:flex;align-items:center;gap:12px}
+#pl .prog{flex:1;height:8px;background:var(--line);border-radius:9px;overflow:hidden}
+#pl .prog i{display:block;height:100%;background:var(--ink);width:0}
+#pl .lab{font:800 clamp(22px,5vw,30px) "Barlow Condensed";margin-top:14px;color:var(--ph)}
+#pl .stage{flex:1;min-height:180px;color:var(--ink);display:flex;align-items:center;justify-content:center}
+#pl .stage svg{width:100%;height:100%;max-height:46vh}
+#pl .info{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:center;max-width:760px;width:100%;margin:0 auto}
+.ring{width:clamp(120px,32vw,170px);aspect-ratio:1;position:relative}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .num{position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(52px,14vw,76px);font-weight:800;font-variant-numeric:tabular-nums}
+#pl h2{font-size:clamp(30px,7vw,44px);text-wrap:balance}
+#pl .desc{color:var(--mute);margin:4px 0 0}
+#pl .next{margin-top:8px;font-weight:600}
+#pl .ctl{display:flex;justify-content:center;gap:14px;margin-top:16px}
+#pl .ctl button{width:64px;height:64px;border-radius:50%;border:2px solid var(--line);background:var(--card);font-size:22px}
+#pl .ctl .big{width:84px;height:84px;background:var(--ph);border-color:var(--ph);color:#fff;font-size:30px}
+.flash{animation:fl .9s ease 3}
+@keyframes fl{50%{color:var(--yel)}}
+.done{text-align:center;margin:auto;max-width:420px}
+.done h2{font-size:56px!important}
+.done .stats{display:flex;justify-content:center;gap:28px;margin:18px 0 24px}
+.done .stats b{display:block;font:800 44px "Barlow Condensed"}
+.done button{min-height:56px;border-radius:14px;border:0;background:var(--ink);color:var(--bg);font:700 22px "Barlow Condensed";padding:0 26px;margin:4px}
+.done .ghost{background:var(--card);color:var(--ink)}
+.chk{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px;min-height:44px}
+.chk input{width:22px;height:22px;accent-color:#fff}
+@media(max-width:600px){.row{grid-template-columns:1fr;gap:4px}.plan li{grid-template-columns:1.6em 60px minmax(0,1fr) auto;gap:8px}.plan .f{width:60px;height:52px}}
+@media(prefers-reduced-motion:reduce){.flash{animation:none}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <h1>Fit in 15</h1>
+  <p>Kurze Workouts mit dem eigenen Körpergewicht – keine Geräte, kein Studio.</p>
+  <div class="tabs" role="tablist">
+    <button role="tab" id="t-plan" aria-selected="true">Workout</button>
+    <button role="tab" id="t-lib" aria-selected="false">Übungen</button>
+  </div>
+  <div class="set" id="settings">
+    <div class="row"><span>Dauer</span><div class="seg" data-k="min"></div></div>
+    <div class="row"><span>Niveau</span><div class="seg" data-k="lvl"></div></div>
+    <div class="row"><span>Fokus</span><div class="seg" data-k="focus"></div></div>
+    <div class="row"><span>Intervall</span><div class="seg" data-k="iv"></div></div>
+    <div class="row"><span>Stretching danach</span><div class="seg" data-k="str"></div></div>
+    <label class="chk"><input type="checkbox" id="voice"> Sprachansagen (deutsch)</label>
+    <label class="chk"><input type="checkbox" id="pref"> Lieblingsübungen bevorzugen</label>
+  </div>
+</div></header>
+
+<main><div class="wrap">
+  <section id="v-plan">
+    <div class="sum"><h2 id="sumT"></h2><span class="mute" id="sumS"></span><button class="ghost" id="shuffle">Neu mischen</button></div>
+    <ol class="plan" id="plan"></ol>
+  </section>
+  <section id="v-lib" hidden>
+    <div class="chips" id="chips"></div>
+    <div class="grid" id="grid"></div>
+  </section>
+</div></main>
+
+<div class="go" id="goBar"><button id="start">Workout starten ▶</button></div>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true"><div class="sheet" id="sheet"></div></div>
+
+<div id="pl" aria-live="polite"></div>
+
+<script>
+{
+// ---------- Übungsdatenbank ----------
+// Posen: 11 Gelenkpunkte "x,y" – Kopf, Hals, Ellbogen1, Hand1, Ellbogen2, Hand2, Hüfte, Knie1, Fuß1, Knie2, Fuß2 (Boden y=92)
+const S={
+ front:"60,18 60,28 52,41 50,54 68,41 70,54 60,54 56,73 55,92 64,73 65,92",
+ jjOpen:"60,18 60,28 48,19 41,8 72,19 79,8 60,54 51,73 43,92 69,73 77,92",
+ sideHips:"56,16 56,26 64,38 58,50 64,38 58,50 56,52 57,72 57,92 55,72 55,92",
+ sqUp:"56,16 56,26 64,34 76,36 62,35 74,38 56,52 57,72 57,92 55,72 55,92",
+ sqDown:"62,38 58,47 70,48 82,48 68,50 80,51 42,66 63,70 58,92 61,71 56,92",
+ pushUp:"92,50 84,54 84,71 84,89 82,71 82,89 52,71 36,80 20,89 36,80 20,89",
+ pushDn:"92,70 84,74 72,72 84,89 70,73 82,89 52,81 36,85 20,89 36,85 20,89",
+ lieDown:"22,82 32,87 44,89 56,89 44,89 56,89 60,88 78,88 96,88 78,87 96,87"
+};
+const M=s=>s.split(" ").map(p=>{const[x,y]=p.split(",");return(120-x)+","+y}).join(" ");
+const EX=[
+ {id:"hampelmann",name:"Hampelmann",cat:"warmup",lvl:1,f:[S.front,S.jjOpen],t:.9,
+  desc:"Springend Arme und Beine öffnen und schließen.",
+  steps:["Aufrecht stehen, Füße zusammen, Arme neben dem Körper.","Springend die Beine grätschen und die Arme über den Kopf führen.","Zurückspringen in die Ausgangsposition – locker und rhythmisch."],
+  tip:"Leise landen, auf dem Fußballen. Ohne Springen: Beine abwechselnd seitlich ausstellen."},
+ {id:"armkreisen",name:"Armkreisen",cat:"warmup",lvl:1,f:["60,18 60,28 46,28 32,28 74,28 88,28 60,54 55,73 53,92 65,73 67,92","60,18 60,28 47,19 37,11 73,19 83,11 60,54 55,73 53,92 65,73 67,92"],t:.8,
+  desc:"Gestreckte Arme in großen Kreisen bewegen.",
+  steps:["Hüftbreit stehen, Arme seitlich auf Schulterhöhe.","Kleine, dann immer größere Kreise nach vorne ziehen.","Nach der Hälfte die Richtung wechseln."],
+  tip:"Schultern bleiben tief, weg von den Ohren.",sides:true},
+ {id:"hohe-knie",name:"Hohe Knie",cat:"cardio",lvl:1,f:["60,16 60,26 68,34 72,24 52,38 50,50 60,52 72,56 70,74 60,72 60,92","60,16 60,26 52,38 50,50 68,34 72,24 60,52 60,72 60,92 72,56 70,74"],t:.6,
+  desc:"Auf der Stelle laufen und die Knie bis auf Hüfthöhe ziehen.",
+  steps:["Aufrecht stehen, Blick nach vorn.","Abwechselnd die Knie zügig bis zur Hüfte hochziehen.","Arme gegengleich mitschwingen."],
+  tip:"Oberkörper aufrecht halten, nicht nach hinten lehnen."},
+ {id:"kniebeugen",name:"Kniebeugen",cat:"beine",lvl:1,f:[S.sqUp,S.sqDown],t:2,
+  desc:"Gesäß nach hinten unten schieben, als würdest du dich auf einen Stuhl setzen.",
+  steps:["Schulterbreit stehen, Fußspitzen leicht nach außen.","Hüfte nach hinten schieben und in die Knie gehen, Arme nach vorn.","Bis die Oberschenkel etwa parallel zum Boden sind, dann kraftvoll hochdrücken."],
+  tip:"Fersen bleiben am Boden, Knie zeigen in Richtung Fußspitzen."},
+ {id:"sprung-kniebeugen",name:"Sprung-Kniebeugen",cat:"cardio",lvl:3,f:[S.sqDown,"56,8 56,18 60,8 64,-2 54,8 52,-2 56,44 58,64 56,82 54,64 52,82"],t:1.2,
+  desc:"Tiefe Kniebeuge, dann explosiv nach oben springen.",
+  steps:["Kniebeuge wie gewohnt ausführen.","Aus der Tiefe explosiv nach oben abspringen, Arme schwingen mit.","Weich in die nächste Kniebeuge landen."],
+  tip:"Landung über die Fußballen abfedern – Knie nicht nach innen kippen lassen."},
+ {id:"ausfallschritte",name:"Ausfallschritte",cat:"beine",lvl:1,f:[S.sideHips,"58,34 58,44 66,56 60,66 66,56 60,66 58,68 76,72 76,92 50,88 34,91"],t:2,sides:true,
+  desc:"Großer Schritt nach vorn und das hintere Knie Richtung Boden senken.",
+  steps:["Hände in die Hüfte, aufrecht stehen.","Großen Schritt nach vorn, beide Knie beugen sich etwa 90°.","Mit dem vorderen Bein zurückdrücken. Nach der Hälfte Bein wechseln (oder abwechseln)."],
+  tip:"Vorderes Knie bleibt über dem Fußgelenk, Oberkörper aufrecht."},
+ {id:"wandsitzen",name:"Wandsitzen",cat:"beine",lvl:2,f:["40,40 40,50 50,60 60,68 50,60 60,68 40,72 62,72 62,92 60,72 60,92"],prop:"wall",
+  desc:"Mit dem Rücken an der Wand sitzen – ohne Stuhl.",
+  steps:["Rücken an die Wand lehnen, Füße etwa 50 cm vor der Wand.","An der Wand nach unten gleiten, bis die Knie im 90°-Winkel sind.","Position halten, ruhig weiteratmen."],
+  tip:"Zu schwer? Etwas höher sitzen bleiben."},
+ {id:"glute-bridge",name:"Beckenheben",cat:"beine",lvl:1,f:["22,82 32,87 44,89 56,89 44,89 56,89 58,87 74,70 84,89 72,70 82,89","22,82 32,87 44,89 56,89 44,89 56,89 60,70 77,66 84,89 75,66 82,89"],t:2,
+  desc:"In Rückenlage das Becken anheben – trainiert Po und hintere Oberschenkel.",
+  steps:["Auf den Rücken legen, Knie anwinkeln, Füße hüftbreit aufstellen.","Po anspannen und das Becken hochdrücken, bis Knie, Hüfte und Schultern eine Linie bilden.","Kurz halten, langsam wieder absenken."],
+  tip:"Druck über die Fersen, nicht ins Hohlkreuz gehen."},
+ {id:"liegestuetze",name:"Liegestütze",cat:"oben",lvl:2,f:[S.pushUp,S.pushDn],t:2,
+  desc:"Klassischer Liegestütz – Brust, Schultern und Arme.",
+  steps:["Hände etwas breiter als schulterbreit, Körper bildet eine gerade Linie.","Ellbogen beugen und die Brust kontrolliert Richtung Boden senken.","Kraftvoll zurück nach oben drücken."],
+  tip:"Bauch und Po anspannen – die Hüfte hängt nicht durch."},
+ {id:"knie-liegestuetze",name:"Knie-Liegestütze",cat:"oben",lvl:1,f:["92,50 84,54 84,71 84,89 82,71 82,89 60,70 44,89 30,76 44,89 30,76","92,70 84,74 72,72 84,89 70,73 82,89 60,82 44,89 30,78 44,89 30,78"],t:2,
+  desc:"Leichtere Variante des Liegestützes auf den Knien.",
+  steps:["Auf die Knie gehen, Hände unter den Schultern aufsetzen.","Körper von Knie bis Kopf gerade halten und die Brust absenken.","Zurück nach oben drücken."],
+  tip:"Ideal, um die Technik für normale Liegestütze aufzubauen."},
+ {id:"stuhl-dips",name:"Stuhl-Dips",cat:"oben",lvl:2,f:["44,36 42,46 40,56 38,66 40,56 38,66 46,72 66,72 70,92 64,72 68,92","46,48 42,58 28,60 38,66 28,60 38,66 46,84 66,76 70,92 64,76 68,92"],t:2,prop:"chair",
+  desc:"Mit den Händen auf einer Stuhlkante den Körper absenken – trainiert den Trizeps.",
+  steps:["Vor einen stabilen Stuhl setzen, Hände neben dem Po auf die Kante.","Po nach vorn vom Stuhl schieben, Ellbogen nach hinten beugen und absenken.","Mit den Armen wieder hochdrücken."],
+  tip:"Stuhl gegen eine Wand stellen, damit er nicht wegrutscht. Leichter: Füße näher heranstellen."},
+ {id:"unterarmstuetz",name:"Unterarmstütz (Plank)",cat:"core",lvl:1,f:["88,64 80,68 80,88 96,88 78,88 94,88 50,78 35,83 20,89 35,83 20,89"],
+  desc:"Den Körper auf den Unterarmen wie ein Brett halten.",
+  steps:["Unterarme parallel aufsetzen, Ellbogen unter den Schultern.","Beine strecken, Körper bildet eine gerade Linie von Kopf bis Ferse.","Bauch und Po fest anspannen und halten."],
+  tip:"Leichter: Knie ablegen. Blick zum Boden, Nacken lang."},
+ {id:"seitstuetz",name:"Seitstütz",cat:"core",lvl:2,f:["86,46 80,52 80,70 80,89 82,36 84,20 52,70 36,80 20,89 36,80 22,89"],sides:true,
+  desc:"Seitlich auf einem Arm stützen und die Hüfte oben halten.",
+  steps:["Seitlich legen, Hand (oder Unterarm) unter der Schulter.","Hüfte anheben, bis der Körper eine gerade Linie bildet.","Halten – nach der Hälfte die Seite wechseln."],
+  tip:"Leichter: auf dem Unterarm und mit angewinkelten Knien."},
+ {id:"shoulder-taps",name:"Schulter-Tippen",cat:"core",lvl:2,f:[S.pushUp,"92,50 84,54 84,71 84,89 74,64 82,56 52,71 36,80 20,89 36,80 20,89"],t:1.2,
+  desc:"Im hohen Stütz abwechselnd mit der Hand die gegenüberliegende Schulter berühren.",
+  steps:["Hohe Liegestützposition, Füße etwas breiter für mehr Stabilität.","Eine Hand zur gegenüberliegenden Schulter führen.","Zurücksetzen und Seite wechseln – Hüfte bleibt ruhig."],
+  tip:"Je weniger die Hüfte wackelt, desto besser."},
+ {id:"mountain-climbers",name:"Bergsteiger",cat:"cardio",lvl:2,f:["92,50 84,54 84,71 84,89 82,71 82,89 54,66 66,78 50,88 38,78 20,89","92,50 84,54 84,71 84,89 82,71 82,89 54,66 38,78 20,89 66,78 50,88"],t:.6,
+  desc:"Im Stütz die Knie abwechselnd schnell zur Brust ziehen.",
+  steps:["Hohe Liegestützposition, Hände unter den Schultern.","Ein Knie zügig Richtung Brust ziehen.","Beine im Wechsel tauschen, als würdest du laufen."],
+  tip:"Schultern bleiben über den Händen. Langsamer = mehr Bauch, schneller = mehr Puls."},
+ {id:"burpees",name:"Burpees",cat:"cardio",lvl:3,f:["56,14 56,24 58,12 60,2 54,12 52,2 56,50 57,71 57,92 55,71 55,92","66,44 62,52 70,68 74,89 68,68 72,89 46,66 64,70 58,92 62,71 56,92",S.pushUp],t:2.4,
+  desc:"Ganzkörperübung: Hocke, Stütz, zurück und Strecksprung.",
+  steps:["Aus dem Stand in die Hocke gehen und die Hände aufsetzen.","Beine nach hinten in den Stütz springen (optional: ein Liegestütz).","Beine zurück zu den Händen springen und mit gestreckten Armen hochspringen."],
+  tip:"Leichter: Beine nach hinten steigen statt springen und den Sprung weglassen."},
+ {id:"crunches",name:"Crunches",cat:"core",lvl:1,f:["22,82 32,87 40,80 30,78 40,80 30,78 58,88 72,70 84,89 70,70 82,89","34,64 42,72 46,62 36,60 46,62 36,60 58,88 72,70 84,89 70,70 82,89"],t:1.8,
+  desc:"Den Oberkörper aus der Rückenlage einrollen.",
+  steps:["Auf den Rücken legen, Knie anwinkeln, Hände locker an die Schläfen.","Schulterblätter mit Kraft aus dem Bauch vom Boden abheben.","Langsam wieder ablegen."],
+  tip:"Nicht am Kopf ziehen – zwischen Kinn und Brust passt eine Faust."},
+ {id:"fahrrad-crunch",name:"Fahrrad-Crunch",cat:"core",lvl:2,f:["30,70 38,77 40,66 30,66 42,67 32,67 58,88 48,70 64,66 76,82 94,80","30,70 38,77 40,66 30,66 42,67 32,67 58,88 76,82 94,80 48,70 64,66"],t:1.4,
+  desc:"Ellbogen und gegenüberliegendes Knie abwechselnd zusammenführen.",
+  steps:["Rückenlage, Hände an den Schläfen, Schultern leicht angehoben.","Ein Knie zur Brust ziehen, das andere Bein strecken.","Oberkörper zum angezogenen Knie drehen, dann Seite wechseln."],
+  tip:"Langsam und kontrolliert wirkt mehr als schnell."},
+ {id:"beinheben",name:"Beinheben",cat:"core",lvl:2,f:[S.lieDown,"22,82 32,87 44,89 56,89 44,89 56,89 60,88 72,74 82,58 72,74 82,58"],t:2.2,
+  desc:"In Rückenlage die gestreckten Beine heben und senken.",
+  steps:["Rückenlage, Hände neben dem Po oder darunter.","Gestreckte Beine bis etwa 90° anheben.","Langsam absenken, kurz vor dem Boden stoppen."],
+  tip:"Der untere Rücken bleibt am Boden. Leichter: Knie leicht beugen."},
+ {id:"russian-twist",name:"Russian Twist",cat:"core",lvl:2,f:["44,52 48,62 60,70 70,74 60,70 70,74 54,86 70,70 86,78 70,70 86,78","44,52 48,62 46,76 38,84 46,76 38,84 54,86 70,70 86,78 70,70 86,78"],t:1.4,
+  desc:"Im Sitzen den Oberkörper von Seite zu Seite drehen.",
+  steps:["Sitzen, Knie gebeugt, Oberkörper leicht zurücklehnen.","Hände vor der Brust zusammen, Füße optional anheben.","Oberkörper abwechselnd nach links und rechts drehen."],
+  tip:"Rücken gerade halten, Drehung kommt aus der Taille."},
+ {id:"superman",name:"Superman",cat:"oben",lvl:1,f:["94,84 84,88 96,89 106,89 96,88 106,88 54,89 37,89 20,89 37,88 20,88","96,74 86,80 98,72 110,66 98,73 110,68 56,89 39,85 22,80 39,85 22,80"],t:2.2,
+  desc:"In Bauchlage Arme und Beine gleichzeitig anheben – stärkt den Rücken.",
+  steps:["Auf den Bauch legen, Arme nach vorn gestreckt.","Arme, Brust und Beine gleichzeitig leicht vom Boden heben.","Kurz halten, langsam ablegen."],
+  tip:"Blick zum Boden, nicht den Kopf in den Nacken legen."},
+ {id:"skater",name:"Eisschnellläufer",cat:"cardio",lvl:2,f:["44,28 48,38 38,46 30,54 60,40 70,46 54,60 48,75 46,92 62,74 36,88","76,28 72,38 82,46 90,54 60,40 50,46 66,60 72,75 74,92 58,74 84,88"],t:1.3,
+  desc:"Seitlich von einem Bein aufs andere springen.",
+  steps:["Auf einem Bein stehen, das andere schräg hinter dem Standbein.","Seitlich auf das andere Bein springen und weich landen.","Arme schwingen gegengleich mit."],
+  tip:"Leichter: seitlicher Schritt statt Sprung."},
+ // ---- Erweiterung ----
+ {id:"hueftkreisen",name:"Hüftkreisen",cat:"warmup",lvl:1,f:["62,18 61,28 51,38 55,50 71,38 67,50 55,54 54,73 55,92 63,73 65,92","58,18 59,28 49,38 53,50 69,38 65,50 65,54 56,73 55,92 66,73 65,92"],t:1.2,sides:true,
+  desc:"Hände in die Hüfte und große, ruhige Kreise mit dem Becken ziehen.",
+  steps:["Hüftbreit stehen, Knie leicht gebeugt, Hände in die Hüfte.","Becken in großen Kreisen bewegen, Oberkörper bleibt ruhig.","Nach der Hälfte die Richtung wechseln."],
+  tip:"Locker bleiben – das mobilisiert den unteren Rücken."},
+ {id:"seitbeugen",name:"Seitbeugen",cat:"warmup",lvl:1,f:["54,20 57,29 64,20 66,8 50,40 50,52 60,54 56,73 55,92 64,73 65,92",M("54,20 57,29 64,20 66,8 50,40 50,52 60,54 56,73 55,92 64,73 65,92")],t:1.8,
+  desc:"Einen Arm über den Kopf strecken und zur Seite neigen.",
+  steps:["Hüftbreit stehen, einen Arm nach oben strecken.","Oberkörper zur Gegenseite neigen, bis du die Flanke spürst.","Zurück zur Mitte und Seite wechseln."],
+  tip:"Nur zur Seite neigen, nicht nach vorn kippen."},
+ {id:"raupe",name:"Raupe (Inchworm)",cat:"warmup",lvl:2,f:["56,16 56,26 58,39 60,52 54,39 54,52 56,52 57,72 57,92 55,72 55,92","80,76 74,68 76,78 78,89 74,78 76,89 56,52 56,72 56,92 56,72 56,92",S.pushUp],t:2.2,
+  desc:"Vorbeugen, mit den Händen nach vorn laufen bis in den Stütz und zurück.",
+  steps:["Aus dem Stand mit möglichst gestreckten Beinen vorbeugen, Hände auf den Boden.","Mit den Händen nach vorn laufen, bis du im hohen Stütz bist.","Mit den Händen zurücklaufen und langsam aufrichten."],
+  tip:"Knie dürfen gebeugt sein, wenn die Dehnung zu stark ist."},
+ {id:"step-jacks",name:"Step-Jacks",cat:"cardio",lvl:1,f:[S.front,"60,18 60,28 49,20 44,9 71,20 76,9 60,54 56,73 55,92 68,73 74,92",S.front,"60,18 60,28 49,20 44,9 71,20 76,9 60,54 52,73 46,92 64,73 65,92"],t:.7,
+  desc:"Hampelmann ohne Sprung – gelenkschonend, aber bringt den Puls hoch.",
+  steps:["Aufrecht stehen, Arme neben dem Körper.","Ein Bein zur Seite stellen und dabei die Arme über den Kopf führen.","Zurück zur Mitte und mit dem anderen Bein wiederholen."],
+  tip:"Perfekt für Einsteiger oder wenn Nachbarn unter dir wohnen."},
+ {id:"schattenboxen",name:"Schattenboxen",cat:"cardio",lvl:1,f:["58,16 58,26 66,32 74,26 64,36 68,28 56,52 62,72 64,92 52,72 48,92","60,16 60,26 72,26 88,24 64,36 68,28 56,52 62,72 64,92 52,72 48,92","58,16 58,26 66,32 74,26 72,30 88,26 56,52 62,72 64,92 52,72 48,92"],t:.45,
+  desc:"Locker auf den Fußballen federn und schnelle Schläge in die Luft boxen.",
+  steps:["Schrittstellung, Fäuste schützen das Kinn.","Abwechselnd gerade Schläge nach vorn – Arm nie ganz durchschlagen.","Dabei leicht auf den Fußballen federn."],
+  tip:"Bauch fest, Schläge kommen aus der Hüftdrehung."},
+ {id:"anfersen",name:"Anfersen",cat:"cardio",lvl:1,f:["58,16 58,26 64,38 62,50 52,38 50,48 58,52 56,72 44,62 58,72 58,92","58,16 58,26 52,38 50,48 64,38 62,50 58,52 58,72 58,92 56,72 44,62"],t:.6,
+  desc:"Auf der Stelle laufen und die Fersen Richtung Po kicken.",
+  steps:["Aufrecht stehen, Arme angewinkelt.","Abwechselnd die Fersen zum Po ziehen.","Zügiges Tempo, Arme laufen mit."],
+  tip:"Knie zeigen nach unten, Oberkörper bleibt aufrecht."},
+ {id:"sternsprung",name:"Sternsprünge",cat:"cardio",lvl:3,f:["60,34 60,44 54,56 58,66 66,56 62,66 60,68 48,74 50,92 72,74 70,92","60,10 60,20 46,10 38,-1 74,10 82,-1 60,46 50,64 42,82 70,64 78,82"],t:1.1,
+  desc:"Aus der Hocke explosiv hochspringen und Arme und Beine zum Stern spreizen.",
+  steps:["In eine halbe Hocke gehen, Hände vor den Knien.","Explosiv hochspringen und Arme und Beine weit öffnen.","Beine wieder schließen und weich in der Hocke landen."],
+  tip:"Leichter: Hampelmann oder Step-Jacks."},
+ {id:"sumo-kniebeuge",name:"Sumo-Kniebeuge",cat:"beine",lvl:1,f:["60,18 60,28 54,40 60,46 66,40 60,46 60,54 50,72 44,92 70,72 76,92","60,34 60,44 54,54 60,60 66,54 60,60 60,70 44,68 42,92 76,68 78,92"],t:2,
+  desc:"Kniebeuge mit weitem Stand – betont Innenschenkel und Po.",
+  steps:["Weiter als schulterbreit stehen, Fußspitzen deutlich nach außen.","Hände vor der Brust, Oberkörper aufrecht nach unten sinken.","Knie nach außen drücken und wieder aufrichten."],
+  tip:"Knie folgen der Richtung der Fußspitzen."},
+ {id:"wadenheben",name:"Wadenheben",cat:"beine",lvl:1,f:[S.sideHips,"56,10 56,20 64,32 58,44 64,32 58,44 56,46 57,66 59,86 55,66 57,86"],t:1.4,
+  desc:"Auf die Zehenspitzen drücken und langsam wieder absenken.",
+  steps:["Hüftbreit stehen, für Balance evtl. an der Wand abstützen.","Fersen so hoch wie möglich anheben.","Kurz halten, langsam absenken."],
+  tip:"Schwerer: auf einer Treppenstufe oder einbeinig."},
+ {id:"einbein-bruecke",name:"Einbeiniges Beckenheben",cat:"beine",lvl:2,f:["22,82 32,87 44,89 56,89 44,89 56,89 58,87 74,70 84,89 76,74 92,66","22,82 32,87 44,89 56,89 44,89 56,89 60,70 77,66 84,89 80,62 97,55"],t:2,sides:true,
+  desc:"Beckenheben mit einem gestreckten Bein – deutlich intensiver für den Po.",
+  steps:["Rückenlage, ein Fuß aufgestellt, das andere Bein gestreckt in der Luft.","Über die Ferse das Becken hochdrücken.","Langsam absenken. Nach der Hälfte Bein wechseln."],
+  tip:"Becken bleibt gerade, nicht zur Seite kippen lassen."},
+ {id:"seit-ausfall",name:"Seitlicher Ausfallschritt",cat:"beine",lvl:2,f:["60,18 60,28 54,40 60,46 66,40 60,46 60,54 56,73 55,92 64,73 65,92","48,32 50,42 54,52 60,56 60,50 62,56 50,66 40,77 38,92 66,79 82,92"],t:2,sides:true,
+  desc:"Großer Schritt zur Seite und in ein Bein hineinsetzen.",
+  steps:["Aufrecht stehen, Hände vor der Brust.","Großer Schritt zur Seite, dieses Knie beugen, das andere Bein bleibt gestreckt.","Zurückdrücken. Nach der Hälfte Seite wechseln."],
+  tip:"Po nach hinten schieben, beide Fersen bleiben am Boden."},
+ {id:"wand-liegestuetze",name:"Wand-Liegestütze",cat:"oben",lvl:1,f:["56,34 62,40 49,39 36,38 49,41 36,40 70,62 76,77 82,92 76,77 82,92","42,36 48,42 46,54 36,38 46,55 36,40 62,64 72,78 82,92 72,78 82,92"],t:1.8,prop:"wall",
+  desc:"Liegestütz im Stehen gegen die Wand – der sanfte Einstieg.",
+  steps:["Etwa eine Armlänge vor der Wand stehen, Hände auf Schulterhöhe an die Wand.","Körper gerade halten und die Brust Richtung Wand senken.","Wieder wegdrücken."],
+  tip:"Je weiter die Füße von der Wand weg sind, desto schwerer."},
+ {id:"diamant-liegestuetze",name:"Diamant-Liegestütze",cat:"oben",lvl:3,f:[S.pushUp,S.pushDn],t:2.2,
+  desc:"Liegestütz mit eng zusammengelegten Händen – Fokus Trizeps.",
+  steps:["Hände unter der Brust so aufsetzen, dass Daumen und Zeigefinger ein Dreieck bilden.","Körper gerade, Brust zu den Händen senken.","Ellbogen eng am Körper wieder hochdrücken."],
+  tip:"Leichter: auf den Knien ausführen."},
+ {id:"pike-liegestuetze",name:"Pike-Liegestütze",cat:"oben",lvl:3,f:["80,70 76,62 80,75 84,89 78,75 82,89 52,40 39,64 26,89 39,64 26,89","84,82 78,74 68,76 84,89 66,77 82,89 52,46 39,67 26,89 39,67 26,89"],t:2.2,
+  desc:"Im umgedrehten V den Kopf Richtung Boden senken – trainiert die Schultern.",
+  steps:["Aus dem Stütz die Hüfte hochschieben, Körper bildet ein umgedrehtes V.","Ellbogen beugen und den Kopf Richtung Boden zwischen die Hände senken.","Wieder hochdrücken."],
+  tip:"Hüfte bleibt die ganze Zeit oben."},
+ {id:"umgekehrte-planke",name:"Umgekehrte Planke",cat:"oben",lvl:2,f:["21,58 30,62 29,76 28,89 31,76 30,89 58,70 76,79 94,89 76,79 94,89"],
+  desc:"Mit dem Bauch nach oben auf Händen und Fersen stützen – für Schultern und Rücken.",
+  steps:["Sitzen, Beine gestreckt, Hände hinter dem Po, Finger zeigen zu den Füßen.","Becken hochdrücken, bis der Körper eine gerade Linie bildet.","Halten, Po fest anspannen."],
+  tip:"Leichter: Knie anwinkeln (umgekehrter Tisch)."},
+ {id:"up-downs",name:"Plank Up-Downs",cat:"core",lvl:2,f:["88,64 80,68 80,88 96,88 78,88 94,88 50,78 35,83 20,89 35,83 20,89",S.pushUp],t:1.8,
+  desc:"Abwechselnd vom Unterarmstütz in den hohen Stütz und zurück.",
+  steps:["Im Unterarmstütz beginnen.","Nacheinander beide Hände aufsetzen und in den hohen Stütz drücken.","Einen Arm nach dem anderen wieder auf den Unterarm senken."],
+  tip:"Führungsarm regelmäßig wechseln, Hüfte ruhig halten."},
+ {id:"toter-kaefer",name:"Toter Käfer",cat:"core",lvl:1,f:["22,82 32,87 34,74 36,62 34,74 36,62 58,88 60,72 76,72 60,72 76,72","22,82 32,87 34,74 36,62 22,80 10,80 58,88 60,72 76,72 76,82 94,84"],t:2,
+  desc:"In Rückenlage gegenüberliegenden Arm und Bein langsam strecken.",
+  steps:["Rückenlage, Arme zur Decke, Knie im 90°-Winkel über der Hüfte.","Einen Arm nach hinten und das gegenüberliegende Bein nach vorn strecken.","Zurück zur Mitte und Seite wechseln."],
+  tip:"Unterer Rücken bleibt fest am Boden – lieber langsam."},
+ {id:"hollow-hold",name:"Hollow Hold",cat:"core",lvl:3,f:["28,76 36,82 26,72 16,66 26,72 16,66 60,89 78,84 96,78 78,84 96,78"],
+  desc:"Wie eine Banane: Schultern und Beine vom Boden heben und halten.",
+  steps:["Rückenlage, Arme über den Kopf gestreckt.","Schultern und gestreckte Beine leicht vom Boden abheben.","Unteren Rücken in den Boden drücken und halten."],
+  tip:"Leichter: Knie anziehen und Arme neben den Körper."},
+ {id:"knie-zur-brust",name:"Sitzendes Knieanziehen",cat:"core",lvl:1,f:["40,58 44,68 40,80 44,89 40,80 44,89 56,88 74,80 92,74 74,80 92,74","46,56 50,66 44,78 46,89 44,78 46,89 56,88 64,70 78,74 64,70 78,74"],t:1.6,
+  desc:"Im Sitzen zurücklehnen und die Knie zur Brust ziehen.",
+  steps:["Sitzen, Hände hinter dem Po abstützen, leicht zurücklehnen.","Beine schwebend nach vorn strecken.","Knie zur Brust ziehen und wieder strecken."],
+  tip:"Füße berühren zwischendurch nicht den Boden."},
+ {id:"vogel-hund",name:"Vogel-Hund",cat:"core",lvl:1,f:["86,62 78,66 78,78 78,89 76,78 76,89 50,68 50,88 32,89 48,88 30,89","86,62 78,66 90,64 102,62 76,78 76,89 50,68 34,68 18,66 48,88 30,89"],t:2,sides:true,
+  desc:"Im Vierfüßlerstand gegenüberliegenden Arm und Bein strecken.",
+  steps:["Vierfüßlerstand: Hände unter den Schultern, Knie unter der Hüfte.","Einen Arm nach vorn und das gegenüberliegende Bein nach hinten strecken.","Kurz halten, zurück. Nach der Hälfte Seite wechseln (oder abwechseln)."],
+  tip:"Rücken bleibt flach wie ein Tisch."},
+ // ---- Erweiterung 2 ----
+ {id:"marschieren",name:"Marschieren auf der Stelle",cat:"warmup",lvl:1,f:["60,16 60,26 66,36 68,28 54,38 52,50 60,52 70,60 68,76 60,72 60,92","60,16 60,26 54,38 52,50 66,36 68,28 60,52 60,72 60,92 70,60 68,76"],t:1,
+  desc:"Lockeres Gehen auf der Stelle mit aktiven Armen.",
+  steps:["Aufrecht stehen.","Abwechselnd die Knie anheben, ohne Hast.","Arme gegengleich mitschwingen und ruhig atmen."],
+  tip:"Ideal zum Einstieg und um den Puls langsam hochzufahren."},
+ {id:"kniebeuge-pulse",name:"Kniebeuge-Pulse",cat:"beine",lvl:2,f:[S.sqDown,"60,32 57,41 68,42 80,42 66,44 78,45 44,60 63,66 58,92 61,67 56,92"],t:.7,
+  desc:"In der tiefen Kniebeuge bleiben und kleine, federnde Bewegungen machen.",
+  steps:["In die tiefe Kniebeuge gehen.","Nur wenige Zentimeter hoch und wieder runter federn.","Nicht ganz aufrichten – die Spannung bleibt in den Beinen."],
+  tip:"Brennt ordentlich – Oberkörper bleibt aufrecht."},
+ {id:"plank-beinheben",name:"Plank mit Beinheben",cat:"core",lvl:2,f:["88,64 80,68 80,88 96,88 78,88 94,88 50,78 35,83 20,89 35,83 20,89","88,64 80,68 80,88 96,88 78,88 94,88 50,78 35,76 19,73 35,83 20,89"],t:1.6,
+  desc:"Im Unterarmstütz abwechselnd ein gestrecktes Bein anheben.",
+  steps:["Unterarmstütz, Körper gerade.","Ein gestrecktes Bein etwa 20 cm anheben, kurz halten.","Absetzen und Bein wechseln."],
+  tip:"Hüfte bleibt parallel zum Boden, nicht aufdrehen."},
+ {id:"baerenhalte",name:"Bärenhalte",cat:"core",lvl:2,f:["86,58 78,62 78,76 78,89 76,76 76,89 50,64 50,82 32,89 48,82 30,89"],
+  desc:"Im Vierfüßlerstand die Knie ein paar Zentimeter vom Boden lösen und halten.",
+  steps:["Vierfüßlerstand, Hände unter den Schultern, Knie unter der Hüfte.","Zehen aufstellen und die Knie 2–3 cm anheben.","Rücken flach halten, ruhig atmen."],
+  tip:"Schwerer: abwechselnd eine Hand kurz abheben."},
+ {id:"schwimmer",name:"Schwimmer",cat:"oben",lvl:2,f:["96,74 86,80 98,72 110,66 98,78 108,82 56,89 39,86 22,82 39,88 22,88","96,74 86,80 98,78 108,82 98,72 110,66 56,89 39,88 22,88 39,86 22,82"],t:.8,
+  desc:"In Bauchlage Arme und Beine abwechselnd schnell auf und ab bewegen.",
+  steps:["Bauchlage, Arme nach vorn gestreckt, Brust leicht angehoben.","Rechter Arm und linkes Bein hoch, dann wechseln.","Zügig im Wechsel ‚schwimmen‘."],
+  tip:"Blick bleibt zum Boden, Nacken lang."},
+ {id:"flutter-kicks",name:"Flutter Kicks",cat:"core",lvl:2,f:["22,82 32,87 44,89 56,89 44,89 56,89 60,88 78,82 96,76 78,86 96,84","22,82 32,87 44,89 56,89 44,89 56,89 60,88 78,86 96,84 78,82 96,76"],t:.6,
+  desc:"In Rückenlage die gestreckten Beine knapp über dem Boden auf und ab flattern lassen.",
+  steps:["Rückenlage, Hände unter dem Po.","Beide Beine gestreckt leicht anheben.","Abwechselnd kleine, schnelle Auf-und-ab-Bewegungen."],
+  tip:"Unterer Rücken bleibt am Boden. Leichter: Beine höher halten."},
+ {id:"sprung-ausfall",name:"Sprung-Ausfallschritte",cat:"cardio",lvl:3,f:["58,34 58,44 66,56 60,66 66,56 60,66 58,68 76,72 76,92 50,88 34,91","58,14 58,24 66,36 60,46 66,36 60,46 58,48 66,64 64,82 52,66 44,80","58,34 58,44 66,56 60,66 66,56 60,66 58,68 50,88 34,91 76,72 76,92"],t:1.1,
+  desc:"Aus dem Ausfallschritt hochspringen und in der Luft die Beine wechseln.",
+  steps:["Ausfallschritt-Position, beide Knie gebeugt.","Explosiv abspringen und in der Luft die Beine tauschen.","Weich im Ausfallschritt mit dem anderen Bein vorn landen."],
+  tip:"Leichter: Ausfallschritte im Wechsel ohne Sprung."},
+ {id:"hocksprung",name:"Hocksprünge",cat:"cardio",lvl:3,f:[S.sqUp,"56,6 56,16 64,24 70,30 62,25 68,31 56,40 68,34 62,52 66,35 60,53"],t:1,
+  desc:"Hochspringen und die Knie in der Luft zur Brust ziehen.",
+  steps:["Hüftbreit stehen, leicht in die Knie gehen.","Explosiv hochspringen und die Knie Richtung Brust ziehen.","Weich landen und direkt den nächsten Sprung anschließen."],
+  tip:"Arme schwingen mit nach vorn – das hilft beim Abheben."},
+ {id:"pistol",name:"Pistol Squat",cat:"beine",lvl:3,f:["56,16 56,26 64,32 76,34 62,33 74,36 56,52 57,72 57,92 70,60 86,62","62,42 58,50 72,50 84,50 70,52 82,53 46,72 64,72 58,92 72,80 92,80"],t:2.6,sides:true,
+  desc:"Einbeinige Kniebeuge, das andere Bein gestreckt nach vorn.",
+  steps:["Auf einem Bein stehen, das andere gestreckt nach vorn, Arme nach vorn.","Kontrolliert so tief wie möglich auf dem Standbein absinken.","Wieder hochdrücken. Nach der Hälfte Bein wechseln."],
+  tip:"Zum Üben: nur bis auf einen Stuhl absenken oder an einem Türrahmen festhalten."},
+ {id:"bulgarisch",name:"Bulgarische Kniebeuge",cat:"beine",lvl:3,f:["60,16 60,26 66,38 62,50 66,38 62,50 60,52 66,72 68,92 50,70 38,66","62,36 62,46 70,56 64,66 70,56 64,66 60,72 78,74 76,92 52,86 38,66"],t:2.2,sides:true,prop:"chair",
+  desc:"Ausfallschritt mit dem hinteren Fuß auf einem Stuhl – sehr intensiv für Beine und Po.",
+  steps:["Rücken zum Stuhl, einen Fuß mit dem Spann auf die Sitzfläche legen.","Vorderes Knie beugen und gerade nach unten sinken.","Über die vordere Ferse hochdrücken. Nach der Hälfte Bein wechseln."],
+  tip:"Vorderer Fuß so weit vorn, dass das Knie nicht weit über die Zehen schiebt."},
+ {id:"wandsitzen-einbein",name:"Einbeiniges Wandsitzen",cat:"beine",lvl:3,f:["40,40 40,50 50,60 60,68 50,60 60,68 40,72 62,72 62,92 60,70 82,70"],prop:"wall",sides:true,
+  desc:"Wandsitzen und dabei ein Bein gestreckt in der Luft halten.",
+  steps:["In die Wandsitz-Position gehen, Knie im 90°-Winkel.","Ein Bein nach vorn strecken und in der Luft halten.","Nach der Hälfte Bein wechseln."],
+  tip:"Leichter: nur die Ferse leicht vom Boden lösen."},
+ {id:"klatsch-liegestuetze",name:"Klatsch-Liegestütze",cat:"oben",lvl:3,f:[S.pushDn,"92,42 84,46 88,58 92,68 86,58 90,68 52,67 36,78 20,89 36,78 20,89"],t:1.2,
+  desc:"Explosiver Liegestütz, bei dem die Hände kurz abheben und klatschen.",
+  steps:["Normale Liegestützposition, Brust absenken.","Explosiv hochdrücken, sodass die Hände abheben – kurz klatschen.","Mit leicht gebeugten Armen weich landen."],
+  tip:"Leichter: auf den Knien oder ohne Klatschen nur abheben."},
+ {id:"spiderman",name:"Spiderman-Liegestütze",cat:"oben",lvl:3,f:[S.pushUp,"92,70 84,74 72,72 84,89 70,73 82,89 52,81 66,74 52,83 36,85 20,89"],t:2.2,
+  desc:"Beim Absenken ein Knie seitlich zum Ellbogen ziehen.",
+  steps:["Hohe Liegestützposition.","Beim Absenken ein Knie seitlich Richtung gleichen Ellbogen ziehen.","Beim Hochdrücken das Bein zurückstellen, Seite wechseln."],
+  tip:"Hüfte bleibt tief, der Rumpf arbeitet stark mit."},
+ {id:"t-liegestuetze",name:"T-Liegestütze",cat:"oben",lvl:3,f:[S.pushDn,S.pushUp,"86,46 80,52 80,70 80,89 82,36 84,20 52,70 36,80 20,89 36,80 22,89"],t:2,
+  desc:"Nach jedem Liegestütz in den Seitstütz aufdrehen und einen Arm zur Decke strecken.",
+  steps:["Einen Liegestütz ausführen.","Oben angekommen den Körper zur Seite drehen, Arm zur Decke – ein T entsteht.","Zurückdrehen, nächster Liegestütz, andere Seite."],
+  tip:"Füße beim Drehen mitrollen lassen."},
+ {id:"v-ups",name:"V-Ups",cat:"core",lvl:3,f:["24,84 34,88 22,89 10,89 22,89 10,89 60,89 78,89 96,89 78,89 96,89","42,60 46,68 58,58 68,50 58,58 68,50 60,89 70,72 80,54 70,72 80,54"],t:1.8,
+  desc:"Gleichzeitig Oberkörper und gestreckte Beine anheben und oben zu einem V schließen.",
+  steps:["Rückenlage, Arme über den Kopf gestreckt, Beine gestreckt.","Arme und Beine gleichzeitig anheben, Hände Richtung Füße.","Kontrolliert wieder ablegen."],
+  tip:"Leichter: Knie anwinkeln (Tuck-Ups)."},
+ {id:"seitstuetz-hueftheben",name:"Seitstütz mit Hüftheben",cat:"core",lvl:3,f:["86,46 80,52 80,70 80,89 82,36 84,20 52,78 36,86 20,89 36,86 22,89","86,46 80,52 80,70 80,89 82,36 84,20 52,66 36,78 20,89 36,78 22,89"],t:1.6,sides:true,
+  desc:"Im Seitstütz die Hüfte absenken und wieder hochdrücken.",
+  steps:["Seitstütz auf Hand oder Unterarm.","Hüfte langsam Richtung Boden sinken lassen.","Kraftvoll wieder hochdrücken. Nach der Hälfte Seite wechseln."],
+  tip:"Schulter bleibt stabil über dem Ellbogen bzw. der Hand."},
+ // ---- Erweiterung 3 ----
+ {id:"seilspringen",name:"Seilspringen ohne Seil",cat:"cardio",lvl:1,f:["56,16 56,26 60,38 66,46 54,38 60,46 56,52 57,72 57,90 55,72 55,90","56,10 56,20 60,32 66,40 54,32 60,40 56,46 57,66 59,85 55,66 57,85"],t:.4,
+  desc:"Kleine, schnelle Sprünge auf den Fußballen, Hände kreisen wie mit einem Seil.",
+  steps:["Aufrecht stehen, Ellbogen nah am Körper, Hände seitlich.","Aus den Fußgelenken klein und schnell abspringen.","Handgelenke kreisen, als würdest du ein Seil schwingen."],
+  tip:"Nur wenige Zentimeter hoch springen – Tempo statt Höhe."},
+ {id:"kniebeuge-kick",name:"Kniebeuge mit Kick",cat:"cardio",lvl:2,f:[S.sqDown,"56,16 56,26 64,34 72,38 60,36 68,40 56,52 72,56 89,54 55,72 55,92"],t:1.4,
+  desc:"Aus der Kniebeuge aufrichten und ein Bein nach vorn kicken.",
+  steps:["Kniebeuge ausführen.","Beim Hochkommen ein Bein kraftvoll nach vorn kicken.","Zurück in die Kniebeuge, nächster Kick mit dem anderen Bein."],
+  tip:"Standbein leicht gebeugt, Bauch fest."},
+ {id:"squat-jacks",name:"Squat-Jacks",cat:"cardio",lvl:2,f:["60,34 60,44 54,56 58,66 66,56 62,66 60,68 46,72 42,92 74,72 78,92","60,14 60,24 54,36 58,46 66,36 62,46 60,50 58,70 58,88 62,70 62,88"],t:.9,
+  desc:"Hampelmann aus der tiefen, breiten Hocke.",
+  steps:["Breite Hocke, Hände vor der Brust.","Füße zusammenspringen und dabei leicht aufrichten.","Sofort wieder breit in die Hocke springen."],
+  tip:"Bleib möglichst tief – die Beine sollen brennen."},
+ {id:"sprawl",name:"Sprawl",cat:"cardio",lvl:2,f:[S.sqUp,"66,44 62,52 70,68 74,89 68,68 72,89 46,66 64,70 58,92 62,71 56,92","92,54 84,58 84,73 84,89 82,73 82,89 54,78 37,84 20,89 37,84 20,89"],t:1.8,
+  desc:"Wie ein Burpee ohne Sprung – Hände auf den Boden und Beine schnell nach hinten werfen.",
+  steps:["Aus dem Stand in die Hocke, Hände auf den Boden.","Beine nach hinten springen, Hüfte sinkt Richtung Boden.","Beine zurückspringen und aufrichten."],
+  tip:"Kommt aus dem Ringen – schnell und explosiv."},
+ {id:"bergsteiger-kreuz",name:"Bergsteiger über Kreuz",cat:"cardio",lvl:3,f:["92,50 84,54 84,71 84,89 82,71 82,89 54,66 68,76 58,82 38,78 20,89","92,50 84,54 84,71 84,89 82,71 82,89 54,66 38,78 20,89 68,76 58,82"],t:.5,
+  desc:"Bergsteiger, bei dem das Knie diagonal zum gegenüberliegenden Ellbogen geht.",
+  steps:["Hohe Liegestützposition.","Rechtes Knie zum linken Ellbogen ziehen.","Schnell wechseln: linkes Knie zum rechten Ellbogen."],
+  tip:"Hüfte bleibt tief, Schultern über den Händen."},
+ {id:"knicks-ausfall",name:"Knicks-Ausfallschritt",cat:"beine",lvl:2,f:["60,18 60,28 52,38 56,50 68,38 64,50 60,54 56,73 55,92 64,73 65,92","58,32 58,42 50,52 54,62 66,52 62,62 58,66 54,80 52,92 64,84 44,91"],t:2,sides:true,
+  desc:"Ein Bein diagonal hinter das andere setzen und tief in den Knicks gehen.",
+  steps:["Hüftbreit stehen, Hände in der Hüfte.","Ein Bein diagonal hinter das Standbein setzen und beide Knie beugen.","Zurück zur Mitte. Nach der Hälfte Seite wechseln."],
+  tip:"Becken bleibt nach vorn ausgerichtet – trainiert den seitlichen Po."},
+ {id:"eselstritt",name:"Eselstritt",cat:"beine",lvl:1,f:["86,62 78,66 78,78 78,89 76,78 76,89 50,68 50,88 32,89 48,88 30,89","86,62 78,66 78,78 78,89 76,78 76,89 50,68 38,60 30,44 48,88 30,89"],t:1.5,sides:true,
+  desc:"Im Vierfüßlerstand ein angewinkeltes Bein Richtung Decke drücken.",
+  steps:["Vierfüßlerstand, Rücken flach.","Ein Bein angewinkelt lassen und die Fußsohle Richtung Decke drücken.","Langsam zurück. Nach der Hälfte Bein wechseln."],
+  tip:"Nicht ins Hohlkreuz – Bewegung kommt aus dem Po."},
+ {id:"seitliches-beinheben",name:"Seitliches Beinheben",cat:"beine",lvl:1,f:["20,79 30,84 24,74 18,72 40,82 46,87 58,86 76,86 94,86 76,88 94,88","20,79 30,84 24,74 18,72 40,82 46,87 58,86 75,77 92,68 76,88 94,88"],t:1.6,sides:true,
+  desc:"In Seitlage das obere gestreckte Bein anheben – für die seitliche Hüfte.",
+  steps:["Seitlich legen, Kopf auf dem unteren Arm.","Oberes Bein gestreckt anheben, Fußspitze zeigt nach vorn.","Langsam senken. Nach der Hälfte Seite wechseln."],
+  tip:"Hüfte nicht nach hinten kippen lassen."},
+ {id:"planche-lean",name:"Planche-Lean",cat:"oben",lvl:3,f:[S.pushUp,"98,52 90,56 87,72 84,89 85,72 82,89 60,72 41,81 22,89 41,81 22,89"],t:2.4,
+  desc:"Im hohen Stütz die Schultern weit über die Hände nach vorn schieben.",
+  steps:["Hohe Liegestützposition, Finger leicht nach außen gedreht.","Körper gestreckt und die Schultern langsam vor die Hände schieben.","Kurz halten und zurück."],
+  tip:"Arme bleiben gestreckt. Schon ein paar Zentimeter sind anstrengend."},
+ {id:"hindu-liegestuetze",name:"Hindu-Liegestütze",cat:"oben",lvl:3,f:["80,70 76,62 80,75 84,89 78,75 82,89 52,40 39,64 26,89 39,64 26,89","86,78 80,80 72,80 84,89 70,81 82,89 56,70 40,80 26,89 40,80 26,89","92,52 86,60 85,74 84,89 83,74 82,89 60,80 43,85 26,89 43,85 26,89"],t:1.8,
+  desc:"Fließende Bewegung vom umgedrehten V tief nach vorn in die Brustöffnung.",
+  steps:["Im umgedrehten V starten, Hüfte hoch.","Brust in einer Bogenbewegung dicht über den Boden nach vorn schieben.","Oben Brust öffnen, dann Hüfte zurück nach oben schieben."],
+  tip:"Langsam ausführen – Kraft und Beweglichkeit in einem."},
+ {id:"snow-angels",name:"Umgekehrte Schneeengel",cat:"oben",lvl:2,f:["94,80 84,84 70,82 58,82 70,83 58,83 54,89 37,89 20,89 37,88 20,88","94,80 84,84 96,78 108,74 96,79 108,76 54,89 37,89 20,89 37,88 20,88"],t:2.4,
+  desc:"In Bauchlage die Arme knapp über dem Boden von der Hüfte bis über den Kopf führen.",
+  steps:["Bauchlage, Brust leicht angehoben, Arme neben der Hüfte.","Arme schwebend in einem großen Bogen nach vorn über den Kopf führen.","Auf gleichem Weg zurück."],
+  tip:"Stärkt den oberen Rücken – gut gegen Schreibtischhaltung."},
+ {id:"scheibenwischer",name:"Scheibenwischer",cat:"core",lvl:3,f:["22,82 32,87 44,89 56,89 44,89 56,89 60,88 62,70 64,52 62,70 64,52","22,82 32,87 44,89 56,89 44,89 56,89 60,88 72,76 84,66 72,76 84,66","22,82 32,87 44,89 56,89 44,89 56,89 60,88 62,70 64,52 62,70 64,52","22,82 32,87 44,89 56,89 44,89 56,89 60,88 54,74 46,62 54,74 46,62"],t:1.3,
+  desc:"In Rückenlage die senkrechten Beine kontrolliert zu beiden Seiten kippen.",
+  steps:["Rückenlage, Arme seitlich ausgestreckt, Beine senkrecht nach oben.","Beine zusammen langsam zu einer Seite absenken.","Über die Mitte zur anderen Seite."],
+  tip:"Schultern bleiben am Boden. Leichter: Knie gebeugt."},
+ {id:"hollow-rocks",name:"Hollow Rocks",cat:"core",lvl:3,f:["30,84 38,88 26,84 14,82 26,84 14,82 60,86 78,76 94,66 78,76 94,66","24,70 32,78 22,68 12,62 22,68 12,62 58,89 76,88 94,87 76,88 94,87"],t:.9,
+  desc:"In der Hollow-Position wie eine Schaukel vor und zurück wippen.",
+  steps:["Hollow Hold einnehmen: Schultern und Beine angehoben.","Körperspannung halten und vor und zurück schaukeln.","Die Form bleibt dabei starr wie eine Banane."],
+  tip:"Erst den Hollow Hold sicher beherrschen."}
+
+
+
+];
+
+const STR=[
+ {id:"d-quad",name:"Oberschenkel vorne",area:"beine",sides:true,f:["56,16 56,26 60,39 62,52 52,40 46,58 56,52 57,72 57,92 54,72 46,58"],
+  desc:"Im Stehen eine Ferse zum Po ziehen.",steps:["Aufrecht stehen, bei Bedarf an der Wand festhalten.","Einen Fuß greifen und die Ferse Richtung Po ziehen.","Knie zeigen nach unten, Becken leicht nach vorn schieben."],tip:"Knie bleiben nebeneinander, kein Hohlkreuz."},
+ {id:"d-vorbeuge",name:"Vorbeuge im Stehen",area:"beine",f:["63,83 60,74 62,82 64,90 61,82 63,90 50,52 54,72 56,92 53,72 55,92"],
+  desc:"Mit lockeren Armen nach vorn hängen lassen – dehnt Beinrückseite und Rücken.",steps:["Hüftbreit stehen, Knie leicht gebeugt.","Oberkörper Wirbel für Wirbel nach vorn abrollen.","Arme und Kopf hängen lassen, ruhig atmen."],tip:"Langsam wieder aufrollen, der Kopf kommt zuletzt."},
+ {id:"d-sitz-vorbeuge",name:"Sitzende Vorbeuge",area:"beine",f:["72,68 64,70 76,80 88,87 74,80 86,87 40,88 62,89 90,89 62,89 90,89"],
+  desc:"Im Sitzen mit langen Beinen nach vorn zu den Füßen greifen.",steps:["Sitzen, Beine gestreckt nebeneinander.","Mit geradem Rücken aus der Hüfte nach vorn beugen.","Hände zu Schienbeinen oder Füßen, halten."],tip:"Lieber Knie leicht beugen als den Rücken stark runden."},
+ {id:"d-wade",name:"Wadendehnung an der Wand",area:"beine",sides:true,prop:"wall",f:["42,30 46,40 40,44 35,40 42,46 35,44 58,60 48,76 46,92 70,77 84,92"],
+  desc:"Hände an die Wand, ein Bein weit nach hinten und die Ferse in den Boden drücken.",steps:["Vor einer Wand stehen, Hände auf Schulterhöhe an die Wand.","Ein Bein weit nach hinten stellen, Bein gestreckt.","Hintere Ferse in den Boden drücken, vorderes Knie beugen."],tip:"Fußspitzen zeigen gerade nach vorn."},
+ {id:"d-hueftbeuger",name:"Hüftbeuger kniend",area:"beine",sides:true,f:["60,32 60,42 66,54 60,64 66,54 60,64 60,68 78,72 78,92 46,90 30,90"],
+  desc:"Im tiefen Kniestand das Becken nach vorn schieben.",steps:["Ein Knie am Boden, das andere Bein vorn im 90°-Winkel.","Po anspannen und das Becken langsam nach vorn schieben.","Oberkörper aufrecht, Dehnung vorn an der Hüfte spüren."],tip:"Polster unter das Knie legen. Sehr gut nach viel Sitzen."},
+ {id:"d-schmetterling",name:"Schmetterling",area:"beine",f:["60,50 60,60 54,72 58,84 66,72 62,84 60,86 38,80 56,88 82,80 64,88"],
+  desc:"Im Sitzen die Fußsohlen zusammen und die Knie nach außen sinken lassen.",steps:["Aufrecht sitzen, Fußsohlen aneinander.","Füße mit den Händen umfassen.","Knie locker Richtung Boden sinken lassen."],tip:"Nicht wippen – einfach schwer werden lassen."},
+ {id:"d-figur4",name:"Figur-4 im Liegen",area:"beine",sides:true,f:["22,82 32,87 44,89 56,89 44,89 56,89 58,88 76,70 62,68 66,70 80,80"],
+  desc:"In Rückenlage einen Knöchel aufs andere Knie legen und heranziehen – dehnt den Po.",steps:["Rückenlage, Füße aufgestellt.","Rechten Knöchel auf das linke Knie legen.","Linkes Bein zur Brust ziehen, bis du die Dehnung im Po spürst."],tip:"Kopf und Schultern bleiben entspannt am Boden."},
+ {id:"d-beinrueck",name:"Beinrückseite im Liegen",area:"beine",sides:true,f:["22,82 32,87 46,76 60,66 44,89 56,89 58,88 62,68 66,48 76,88 94,88"],
+  desc:"In Rückenlage ein gestrecktes Bein Richtung Decke ziehen.",steps:["Rückenlage, beide Beine lang.","Ein Bein heben und hinter Oberschenkel oder Wade greifen.","Sanft zu dir ziehen, das Bein bleibt möglichst gestreckt."],tip:"Ein Handtuch um den Fuß hilft, wenn du nicht rankommst."},
+ {id:"d-kind",name:"Kindhaltung",area:"core",f:["80,86 72,84 88,88 104,88 88,88 104,88 46,76 64,88 40,90 64,88 40,90"],
+  desc:"Auf den Fersen sitzen und den Oberkörper mit langen Armen nach vorn ablegen.",steps:["Knien, Po auf die Fersen.","Oberkörper nach vorn ablegen, Stirn auf den Boden.","Arme lang nach vorn, tief in den Rücken atmen."],tip:"Knie dürfen auseinander, wenn es angenehmer ist."},
+ {id:"d-kobra",name:"Kobra",area:"core",f:["83,62 76,68 78,78 80,89 76,78 78,89 54,88 37,89 20,89 37,88 20,88"],
+  desc:"In Bauchlage den Oberkörper auf die Hände hochdrücken – dehnt den Bauch.",steps:["Bauchlage, Hände neben der Brust.","Oberkörper sanft hochdrücken, Becken bleibt am Boden.","Schultern weg von den Ohren, halten."],tip:"Nur so weit, wie es im unteren Rücken angenehm ist."},
+ {id:"d-katze-kuh",name:"Katze-Kuh",area:"core",t:3,f:["84,74 78,64 78,77 78,89 76,77 76,89 50,66 50,88 32,89 48,88 30,89","88,56 78,68 78,79 78,89 76,79 76,89 50,64 50,88 32,89 48,88 30,89"],
+  desc:"Im Vierfüßlerstand langsam zwischen rundem Rücken und Hohlkreuz wechseln.",steps:["Vierfüßlerstand.","Ausatmen: Rücken rund machen, Kinn zur Brust.","Einatmen: Brust nach vorn, Blick leicht nach oben."],tip:"Ganz langsam im Atemrhythmus bewegen."},
+ {id:"d-drehung",name:"Liegende Drehung",area:"core",sides:true,f:["22,82 32,87 34,74 36,60 44,89 56,89 58,88 72,76 76,90 78,88 96,88"],
+  desc:"In Rückenlage ein angewinkeltes Knie über den Körper zur Seite sinken lassen.",steps:["Rückenlage, Arme seitlich ausgebreitet.","Ein Knie anwinkeln und über das andere Bein zur Seite sinken lassen.","Schultern bleiben am Boden, Blick zur Gegenseite."],tip:"Lockert den unteren Rücken – perfekt zum Abschluss."},
+ {id:"d-seite",name:"Seitdehnung im Stehen",area:"core",sides:true,f:["54,20 57,29 64,20 66,8 50,40 50,52 60,54 56,73 55,92 64,73 65,92"],
+  desc:"Einen Arm über den Kopf und sanft zur Seite neigen – dehnt die Flanke.",steps:["Hüftbreit stehen, einen Arm nach oben strecken.","Zur Gegenseite neigen, bis du die Flanke spürst.","Halten und in die Seite atmen."],tip:"Becken bleibt mittig stehen."},
+ {id:"d-brust",name:"Brustöffner",area:"oben",f:["58,16 57,26 50,38 44,50 52,38 46,50 56,52 57,72 57,92 55,72 55,92"],
+  desc:"Hände hinter dem Rücken verschränken und die Brust öffnen.",steps:["Aufrecht stehen, Hände hinter dem Rücken verschränken.","Arme strecken und leicht nach hinten unten ziehen.","Brust nach vorn oben öffnen, Schultern zurück."],tip:"Tut gut nach Liegestützen und langem Sitzen."},
+ {id:"d-trizeps",name:"Trizeps-Dehnung",area:"oben",sides:true,f:["60,18 60,28 68,12 60,24 50,22 66,12 60,54 56,73 55,92 64,73 65,92"],
+  desc:"Einen Arm hinter den Kopf beugen und den Ellbogen sanft ziehen.",steps:["Einen Arm nach oben strecken und hinter dem Kopf beugen.","Mit der anderen Hand den Ellbogen greifen.","Ellbogen sanft Richtung Kopfmitte ziehen."],tip:"Kopf bleibt aufrecht, nicht nach vorn drücken."},
+ {id:"d-schulter",name:"Schulter quer",area:"oben",sides:true,f:["60,18 60,28 48,31 36,34 70,40 52,34 60,54 56,73 55,92 64,73 65,92"],
+  desc:"Einen gestreckten Arm quer vor die Brust ziehen.",steps:["Einen Arm gestreckt vor die Brust führen.","Mit der anderen Hand oberhalb des Ellbogens heranziehen.","Schulter bleibt unten, halten."],tip:"Nicht am Ellbogengelenk selbst ziehen."},
+ {id:"d-nacken",name:"Nackendehnung",area:"oben",sides:true,f:["53,20 60,29 66,16 54,14 66,42 68,54 60,54 56,73 55,92 64,73 65,92"],
+  desc:"Den Kopf seitlich zur Schulter neigen und sanft mit der Hand unterstützen.",steps:["Aufrecht stehen oder sitzen.","Kopf zur Seite neigen, Ohr Richtung Schulter.","Hand legt sich leicht auf den Kopf, gegenüberliegende Schulter zieht nach unten."],tip:"Nur das Gewicht der Hand – nicht ziehen."},
+ // ---- Dehnungen Erweiterung ----
+ {id:"d-adduktoren",name:"Innenschenkel seitlich",area:"beine",sides:true,f:["48,32 50,42 46,54 42,68 56,54 50,66 50,66 40,77 38,92 66,79 82,92"],
+  desc:"Breiter Stand, in ein Knie sinken und das andere Bein gestreckt lassen.",steps:["Sehr breit stehen, Fußspitzen leicht nach außen.","Gewicht auf ein Bein verlagern und dieses Knie beugen.","Das andere Bein bleibt gestreckt – Dehnung innen am Oberschenkel."],tip:"Po nach hinten, Rücken gerade."},
+ {id:"d-hamstring-stehend",name:"Beinrückseite im Stehen",area:"beine",sides:true,f:["66,28 62,36 68,48 70,58 66,48 68,58 50,56 62,72 74,90 48,74 46,92"],
+  desc:"Ein Bein mit der Ferse nach vorn stellen und den Oberkörper mit geradem Rücken vorlehnen.",steps:["Ein Bein einen kleinen Schritt nach vorn, Ferse am Boden, Fußspitze hoch.","Hinteres Knie beugen, Hände auf den Oberschenkel.","Mit geradem Rücken aus der Hüfte nach vorn neigen."],tip:"Der Rücken bleibt lang – nicht rund machen."},
+ {id:"d-brust-wand",name:"Brustdehnung an der Wand",area:"oben",sides:true,prop:"wall",f:["52,18 52,28 42,26 36,20 56,40 58,52 52,54 53,73 53,92 51,73 51,92"],
+  desc:"Hand und Unterarm an die Wand legen und den Körper sanft wegdrehen.",steps:["Seitlich neben eine Wand stellen.","Arm auf Schulterhöhe nach hinten an die Wand legen.","Oberkörper langsam von der Wand wegdrehen."],tip:"Auch gut im Türrahmen – Dehnung vorn in Brust und Schulter."},
+ {id:"d-unterarm",name:"Unterarm & Handgelenk",area:"oben",sides:true,f:["56,16 56,26 68,28 80,28 64,34 78,30 56,52 57,72 57,92 55,72 55,92"],
+  desc:"Einen Arm nach vorn strecken und die Finger sanft zurückziehen.",steps:["Arm gestreckt nach vorn, Handfläche zeigt nach vorn.","Mit der anderen Hand die Finger sanft zu dir ziehen.","Danach Handrücken nach vorn und Finger nach unten ziehen."],tip:"Ideal nach Liegestützen und für Leute, die viel tippen."},
+ {id:"d-streckung",name:"Ganzkörperstreckung",area:"core",f:["60,18 60,28 58,16 58,4 62,16 62,4 60,54 58,73 58,92 62,73 62,92","60,16 60,26 58,14 58,1 62,14 62,1 60,52 58,71 58,89 62,71 62,89"],t:3,
+  desc:"Beide Arme lang nach oben strecken und dich groß machen.",steps:["Hüftbreit stehen.","Arme über den Kopf strecken, Finger verschränken.","Nach oben ziehen, als wolltest du die Decke berühren – optional auf die Zehen."],tip:"Tief einatmen beim Strecken, ausatmen beim Lösen."},
+ {id:"d-faden",name:"Faden einfädeln",area:"core",sides:true,f:["84,84 78,76 70,84 58,88 76,78 78,89 50,66 50,88 32,89 48,88 30,89"],
+  desc:"Im Vierfüßlerstand einen Arm unter dem Körper durchschieben und die Schulter ablegen.",steps:["Vierfüßlerstand.","Einen Arm unter dem anderen hindurch zur Seite schieben.","Schulter und Schläfe sinken zum Boden, Hüfte bleibt oben."],tip:"Öffnet den oberen Rücken und die Schultern."},
+ {id:"d-halber-spagat",name:"Halber Spagat",area:"beine",sides:true,f:["74,54 68,60 72,74 76,89 70,74 74,89 50,72 72,80 94,88 50,90 32,90"],
+  desc:"Aus dem Kniestand ein Bein gestreckt nach vorn und die Hüfte nach hinten schieben.",steps:["Ein Knie am Boden, das andere Bein vorn.","Vorderes Bein strecken, Fußspitze zieht zu dir.","Hüfte nach hinten schieben, Hände neben dem Bein abstützen."],tip:"Polster unter das Knie. Rücken bleibt lang."},
+ {id:"d-hund",name:"Herabschauender Hund",area:"beine",f:["80,70 76,62 80,75 84,89 78,75 82,89 52,40 39,64 26,89 39,64 26,89"],
+  desc:"Im umgedrehten V die Fersen Richtung Boden und die Brust Richtung Oberschenkel schieben.",steps:["Aus dem Vierfüßlerstand die Hüfte hoch schieben.","Arme und Rücken lang, Kopf zwischen den Armen.","Fersen abwechselnd Richtung Boden drücken."],tip:"Knie dürfen gebeugt sein – der gerade Rücken ist wichtiger."},
+ {id:"d-taube",name:"Taube",area:"beine",sides:true,f:["70,52 64,60 70,74 74,89 68,74 72,89 54,82 72,86 60,89 36,88 18,89"],
+  desc:"Ein Bein vorn angewinkelt ablegen, das andere lang nach hinten – tiefe Dehnung für Po und Hüfte.",steps:["Aus dem Vierfüßlerstand ein Knie nach vorn hinter die Hand bringen.","Das hintere Bein lang nach hinten ausstrecken.","Hüfte sinken lassen, Oberkörper aufrecht oder nach vorn abgelegt."],tip:"Kissen unter die Hüfte, wenn sie nicht zum Boden kommt."},
+ {id:"d-sitz-drehung",name:"Sitzende Drehung",area:"core",sides:true,f:["52,48 53,58 62,62 66,68 44,72 40,88 54,86 66,68 76,88 74,88 94,88"],
+  desc:"Im Sitzen ein Bein aufstellen und den Oberkörper zum Knie drehen.",steps:["Sitzen, ein Bein lang, das andere aufgestellt.","Mit dem gegenüberliegenden Arm das Knie umfassen.","Oberkörper aufrecht zur Seite des aufgestellten Beins drehen."],tip:"Bei jedem Einatmen groß werden, beim Ausatmen etwas weiter drehen."},
+ {id:"d-kopf-knie",name:"Einbeinige Vorbeuge",area:"beine",sides:true,f:["72,68 64,70 76,80 88,87 74,80 86,87 40,88 62,89 90,89 52,82 46,89"],
+  desc:"Im Sitzen ein Bein gestreckt, das andere angewinkelt, und zum gestreckten Fuß beugen.",steps:["Sitzen, ein Bein lang, die Fußsohle des anderen an den Oberschenkel.","Oberkörper zum gestreckten Bein ausrichten.","Mit geradem Rücken nach vorn beugen."],tip:"Lieber weniger tief und dafür mit langem Rücken."},
+ {id:"d-paeckchen",name:"Päckchen",area:"core",f:["22,82 32,87 46,78 56,72 46,78 56,72 58,88 54,70 70,70 54,70 70,70"],
+  desc:"In Rückenlage beide Knie zur Brust ziehen und umarmen.",steps:["Rückenlage.","Beide Knie zur Brust ziehen und mit den Armen umfassen.","Optional leicht hin und her schaukeln."],tip:"Massiert den unteren Rücken – sehr angenehm zum Schluss."},
+ {id:"d-happy-baby",name:"Glückliches Baby",area:"beine",f:["22,82 32,87 44,72 56,58 44,72 56,58 58,88 50,74 56,58 50,74 56,58"],
+  desc:"In Rückenlage die Fußaußenkanten greifen und die Knie Richtung Achseln ziehen.",steps:["Rückenlage, Knie zur Brust.","Fußsohlen zeigen zur Decke, Hände greifen die Füße.","Knie sanft Richtung Boden neben den Oberkörper ziehen."],tip:"Unterer Rücken bleibt am Boden."},
+ {id:"d-lang",name:"Lang machen im Liegen",area:"core",f:["24,84 34,88 22,89 10,89 22,89 10,89 60,89 78,89 96,89 78,89 96,89"],
+  desc:"Auf dem Rücken liegend Arme und Beine in entgegengesetzte Richtungen strecken.",steps:["Rückenlage, Arme über den Kopf.","Fingerspitzen und Fersen ziehen in entgegengesetzte Richtungen.","Ein paar tiefe Atemzüge, dann komplett entspannen."],tip:"Perfekter Abschluss – danach einfach kurz liegen bleiben."}
+].map(s=>Object.assign({cat:"dehnen",lvl:1},s));
+const ALL=EX.concat(STR);
+const CATS={warmup:"Aufwärmen",cardio:"Cardio",beine:"Beine & Po",oben:"Oberkörper",core:"Rumpf",dehnen:"Dehnen"};
+const LV=["","Einsteiger","Fortgeschritten","Profi"];
+
+// ---------- Figuren ----------
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const pts=s=>s.trim().split(/\s+/).map(p=>p.split(",").map(Number));
+const P=p=>p.join(" ");
+function paths(s){const [H,N,E1,W1,E2,W2,Pp,K1,F1,K2,F2]=pts(s);
+ return{back:`M${P(N)}L${P(E2)}L${P(W2)}M${P(Pp)}L${P(K2)}L${P(F2)}`,
+  front:`M${P(N)}L${P(H)}M${P(N)}L${P(Pp)}M${P(N)}L${P(E1)}L${P(W1)}M${P(Pp)}L${P(K1)}L${P(F1)}`,hx:H[0],hy:H[1]}}
+function anim(attr,vals,dur){if(vals.length<2||reduce)return"";
+ const seq=vals.concat(vals.slice(0,-1).reverse()),n=seq.length-1;
+ return `<animate attributeName="${attr}" dur="${dur}s" repeatCount="indefinite" values="${seq.join(";")}" keyTimes="${seq.map((_,i)=>(i/n).toFixed(3)).join(";")}" calcMode="spline" keySplines="${Array(n).fill(".45 0 .55 1").join(";")}"/>`}
+function fig(ex,cls="f"){const F=ex.f.map(paths),d=(ex.t||1.6)*(ex.f.length-1);
+ const prop=ex.prop==="wall"?`<path d="M33 4V92" stroke="var(--mute)" stroke-width="3"/><path d="M14 4H33V92H14Z" fill="var(--line)"/>`
+  :ex.prop==="chair"?`<path d="M14 40V92M14 66H40V92M36 66V92" stroke="var(--mute)" stroke-width="3.5" fill="none" stroke-linecap="round"/>`:"";
+ return `<svg class="${cls}" viewBox="0 -6 120 102" aria-label="${ex.name}" role="img">
+ <path d="M4 92.5H116" stroke="var(--line)" stroke-width="2.5"/>${prop}
+ <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="5">
+ <path d="${F[0].back}" opacity=".38">${anim("d",F.map(x=>x.back),d)}</path>
+ <path d="${F[0].front}">${anim("d",F.map(x=>x.front),d)}</path></g>
+ <circle r="6.5" cx="${F[0].hx}" cy="${F[0].hy}" fill="currentColor">${anim("cx",F.map(x=>x.hx),d)}${anim("cy",F.map(x=>x.hy),d)}</circle></svg>`}
+
+// ---------- Einstellungen ----------
+const OPT={min:[[10,"10 Min"],[12,"12 Min"],[15,"15 Min"]],lvl:[[1,"Einsteiger"],[2,"Fortgeschritten"],[3,"Profi"]],
+ focus:[["ganz","Ganzkörper"],["beine","Beine & Po"],["core","Rumpf"],["oben","Oberkörper"],["cardio","Cardio"]],
+ iv:[["30/15","30 s / 15 s"],["40/20","40 s / 20 s"],["45/15","45 s / 15 s"],["50/10","50 s / 10 s"]],
+ str:[[0,"Aus"],[2,"2 Min"],[3,"3 Min"],[5,"5 Min"],[8,"8 Min"]]};
+const FOCUS={ganz:["cardio","beine","oben","core"],beine:["beine","cardio","beine","core"],core:["core","core","cardio"],oben:["oben","core","oben"],cardio:["cardio","beine","cardio","core"]};
+let st={min:12,lvl:1,focus:"ganz",iv:"40/20",voice:false,pref:true,str:3};
+try{Object.assign(st,JSON.parse(localStorage.getItem("fit15-set")||"{}"))}catch(e){}
+const save=()=>{try{localStorage.setItem("fit15-set",JSON.stringify(st))}catch(e){}};
+const $=s=>document.querySelector(s);
+function renderSeg(){document.querySelectorAll(".seg").forEach(el=>{const k=el.dataset.k;
+ el.innerHTML=OPT[k].map(([v,l])=>`<button aria-pressed="${String(st[k])===String(v)}" data-v="${v}">${l}</button>`).join("")})}
+$("#settings").addEventListener("click",e=>{const b=e.target.closest(".seg button");if(!b)return;
+ const k=b.parentElement.dataset.k,v=b.dataset.v;st[k]=isNaN(v)?v:+v;save();renderSeg();build()});
+let likes=new Set();try{likes=new Set(JSON.parse(localStorage.getItem("fit15-likes")||"[]"))}catch(e){}
+const heart=id=>`<button class="like" data-like="${id}" aria-pressed="${likes.has(id)}" aria-label="Gefällt mir" title="Gefällt mir">${likes.has(id)?"♥":"♡"}</button>`;
+document.addEventListener("click",e=>{const b=e.target.closest(".like");if(!b)return;e.stopPropagation();const id=b.dataset.like;
+ likes.has(id)?likes.delete(id):likes.add(id);try{localStorage.setItem("fit15-likes",JSON.stringify([...likes]))}catch(e){}
+ document.querySelectorAll(`.like[data-like="${id}"]`).forEach(x=>{x.setAttribute("aria-pressed",likes.has(id));x.textContent=likes.has(id)?"♥":"♡"});
+ if(!$("#v-lib").hidden&&cf==="fav")renderLib();updLikeCount()},true);
+$("#pref").checked=!!st.pref;$("#pref").addEventListener("change",e=>{st.pref=e.target.checked;save();build()});
+$("#voice").checked=!!st.voice;$("#voice").addEventListener("change",e=>{st.voice=e.target.checked;save()});
+
+// ---------- Workout-Generator ----------
+let plan=[],strPlan=[];
+const HOLD=s=>s.sides?40:30,SW=5,CD=15;
+const AREA={ganz:null,cardio:"beine",beine:"beine",core:"core",oben:"oben"};
+function strBag(){const a=AREA[st.focus];let b=shuffle(STR);if(a)b.sort((x,y)=>(y.area===a)-(x.area===a));if(st.pref)b.sort((x,y)=>likes.has(y.id)-likes.has(x.id));return b}
+function buildStr(){strPlan=[];if(!st.str)return;const T=st.str*60;let t=0;for(const s of strBag()){if(t>0&&t+SW+HOLD(s)>T+10)continue;strPlan.push(s);t+=(t?SW:0)+HOLD(s);if(t>=T-10)break}sortStr()}
+const headY=s=>+s.f[0].split(" ")[6].split(",")[1];
+function sortStr(){strPlan.sort((a,b)=>headY(a)-headY(b))}
+const strTime=()=>strPlan.length?CD+strPlan.reduce((a,s)=>a+HOLD(s),0)+(strPlan.length-1)*SW:0;
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const iv=()=>st.iv.split("/").map(Number);
+function build(){const [w,r]=iv(),n=Math.max(4,Math.round((st.min*60+r)/(w+r)));
+ const ok=e=>e.lvl<=st.lvl;
+ const warm=shuffle(EX.filter(e=>e.cat==="warmup"&&ok(e)));
+ plan=warm.slice(0,n>=16?2:1);
+ const order=FOCUS[st.focus],bags={};
+ let k=0,guard=0;
+ while(plan.length<n&&guard++<500){const c=order[k++%order.length];
+  if(!bags[c]||!bags[c].length){bags[c]=shuffle(EX.filter(e=>e.cat===c&&ok(e)));bags[c].sort((a,b)=>(b.lvl>=st.lvl)-(a.lvl>=st.lvl));if(st.pref)bags[c].sort((a,b)=>likes.has(b.id)-likes.has(a.id))}
+  const bag=bags[c];if(!bag.length)continue;
+  let i=bag.findIndex(e=>e!==plan[plan.length-1]);if(i<0)i=0;plan.push(bag.splice(i,1)[0])}
+ buildStr();renderPlan()}
+function poolFor(){const cats=new Set(FOCUS[st.focus]);return EX.filter(e=>cats.has(e.cat)&&e.lvl<=st.lvl)}
+function fmt(s){s=Math.round(s);return`${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`}
+function renderPlan(){const [w,r]=iv(),wt=plan.length*w+(plan.length-1)*r,tot=wt+strTime();
+ $("#sumT").textContent=`${plan.length} Übungen${strPlan.length?` + ${strPlan.length} Dehnungen`:""} · ${fmt(tot)} Min`;
+ $("#sumS").textContent=`je ${w} s Belastung, ${r} s Pause${strPlan.length?` · danach ${fmt(strTime())} Min Stretching`:""}`;
+ const row=(e,i,k,n,cls="")=>`<li class="${cls}"><span class="n">${n}</span>${fig(e)}
+ <button class="open" data-id="${e.id}"><b>${e.name}${likes.has(e.id)?' <span style="color:var(--red)">♥</span>':""}</b><small>${e.cat==="dehnen"?`${HOLD(e)} s halten`:CATS[e.cat]}${e.sides?" · Seitenwechsel":""}</small></button>
+ ${e.cat==="warmup"?"<span></span>":`<button class="swap" data-${k}="${i}" aria-label="${e.name} tauschen" title="Tauschen">↻</button>`}</li>`;
+ $("#plan").innerHTML=plan.map((e,i)=>row(e,i,"i",i+1)).join("")+(strPlan.length?`<li class="sec"><h3>Stretching</h3><small>${fmt(strTime())} Min zum Runterkommen – jede Dehnung ruhig halten</small></li>`+strPlan.map((e,i)=>row(e,i,"s",plan.length+i+1,"st")).join(""):"")}
+$("#plan").addEventListener("click",e=>{const s=e.target.closest(".swap"),o=e.target.closest(".open");
+ if(s&&s.dataset.i!=null){const i=+s.dataset.i,cur=plan[i],c=shuffle(poolFor().filter(x=>!plan.includes(x)&&x.cat===cur.cat));
+  const alt=c[0]||shuffle(poolFor().filter(x=>x!==cur))[0];if(alt){plan[i]=alt;renderPlan()}}
+ if(s&&s.dataset.s!=null){const i=+s.dataset.s,cur=strPlan[i],alt=strBag().find(x=>!strPlan.includes(x)&&HOLD(x)===HOLD(cur))||strBag().find(x=>!strPlan.includes(x));if(alt){strPlan[i]=alt;sortStr();renderPlan()}}
+ if(o)detail(o.dataset.id)});
+$("#shuffle").addEventListener("click",build);
+
+// ---------- Bibliothek ----------
+let cf="alle";
+function renderLib(){$("#chips").innerHTML=[["alle",`Alle (${ALL.length})`],["fav",`♥ Favoriten (${likes.size})`],...Object.entries(CATS)].map(([k,l])=>`<button aria-pressed="${cf===k}" data-c="${k}">${l}</button>`).join("");
+ const list=ALL.filter(e=>cf==="alle"||(cf==="fav"?likes.has(e.id):e.cat===cf));
+ $("#grid").innerHTML=list.length?list.map(e=>`<div class="card"><button class="open-card" data-id="${e.id}">${fig(e)}<b>${e.name}</b>
+ <small>${CATS[e.cat]}</small> <span class="dots" aria-label="${LV[e.lvl]}">${"●".repeat(e.lvl)}${"○".repeat(3-e.lvl)}</span></button>${heart(e.id)}</div>`).join("")
+ :`<p class="empty">Noch keine Favoriten. Tippe bei einer Übung auf ♡, um sie zu merken.</p>`}
+function updLikeCount(){const b=document.querySelector('#chips [data-c="fav"]');if(b)b.textContent=`♥ Favoriten (${likes.size})`;if(!$("#v-plan").hidden)renderPlan()}
+$("#chips").addEventListener("click",e=>{const b=e.target.closest("button");if(b){cf=b.dataset.c;renderLib()}});
+$("#grid").addEventListener("click",e=>{const b=e.target.closest(".open-card");if(b)detail(b.dataset.id)});
+function tab(lib){$("#v-plan").hidden=lib;$("#v-lib").hidden=!lib;$("#settings").hidden=lib;$("#goBar").hidden=lib;
+ $("#t-plan").setAttribute("aria-selected",!lib);$("#t-lib").setAttribute("aria-selected",lib);lib?renderLib():renderPlan()}
+$("#t-plan").addEventListener("click",()=>tab(false));$("#t-lib").addEventListener("click",()=>tab(true));
+
+function detail(id){const e=ALL.find(x=>x.id===id);
+ $("#sheet").innerHTML=`<button class="x" aria-label="Schließen">×</button>${fig(e)}<h3 class="nm" style="display:flex;align-items:center;gap:6px">${e.name} ${heart(e.id)}</h3>
+ <small style="color:var(--mute)">${CATS[e.cat]}${e.cat==="dehnen"?` · ${HOLD(e)} s halten`:" · "+LV[e.lvl]}${e.sides?" · Seitenwechsel zur Halbzeit":""}</small>
+ <p>${e.desc}</p><ol>${e.steps.map(s=>`<li>${s}</li>`).join("")}</ol><div class="tip"><b>Tipp:</b> ${e.tip}</div>`;
+ $("#modal").classList.add("on");$("#sheet .x").focus()}
+$("#modal").addEventListener("click",e=>{if(e.target.id==="modal"||e.target.closest(".x"))$("#modal").classList.remove("on")});
+addEventListener("keydown",e=>{if(e.key==="Escape")$("#modal").classList.remove("on")});
+
+// ---------- Player ----------
+let ph=[],pi=0,left=0,paused=false,running=false,last=0,lastCeil=0,half=false,ac=null,wake=null,t0=0;
+function beep(f=880,d=.12,v=.25){try{if(!ac)return;const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;o.type="sine";
+ g.gain.setValueAtTime(v,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);o.connect(g).connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
+function say(t){if(!st.voice)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="de-DE";speechSynthesis.speak(u)}catch(e){}}
+let seq=[];
+function start(){const [w,r]=iv();seq=plan.concat(strPlan);ph=[{type:"prep",dur:10,ex:plan[0]}];
+ plan.forEach((e,i)=>{ph.push({type:"work",dur:w,ex:e,i});if(i<plan.length-1)ph.push({type:"rest",dur:r,ex:plan[i+1],i:i+1})});
+ strPlan.forEach((e,j)=>{const i=plan.length+j;ph.push({type:j?"rest":"cool",dur:j?SW:CD,ex:e,i});ph.push({type:"stretch",dur:HOLD(e),ex:e,i})});
+ try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();ac.resume()}catch(e){}
+ try{navigator.wakeLock?.request("screen").then(l=>wake=l).catch(()=>{})}catch(e){}
+ $("#pl").classList.add("on");document.body.style.overflow="hidden";running=true;paused=false;t0=Date.now();go(0);last=performance.now();requestAnimationFrame(loop)}
+const LBL={prep:"Mach dich bereit",work:"Los!",rest:"Pause – gleich kommt",cool:"Geschafft! Jetzt dehnen",stretch:"Dehnen – ruhig atmen"};
+function go(i){pi=i;const p=ph[i];left=p.dur;lastCeil=Math.ceil(left);half=false;
+ const col=p.type==="work"?"var(--red)":p.type==="stretch"||p.type==="cool"?"var(--str)":"var(--blue)";
+ const nx=seq[p.i+1],nxt=(p.type==="work"||p.type==="stretch")?(nx?`Danach: ${nx.name}${nx.cat==="dehnen"&&p.type==="work"?" (Stretching)":""}`:p.type==="work"?"Letzte Übung – gib alles!":"Letzte Dehnung"):"";
+ $("#pl").style.setProperty("--ph",col);
+ $("#pl").innerHTML=`<div class="bar"><span class="num" style="font-size:20px;font-weight:700">${(p.i??0)+1}/${seq.length}</span>
+ <div class="prog"><i id="pg"></i></div><button class="ghost" id="quit" aria-label="Workout beenden">✕</button></div>
+ <div class="lab" id="lab">${LBL[p.type]}</div>
+ <div class="stage">${fig(p.ex,"")}</div>
+ <div class="info"><div class="ring"><svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="88" fill="none" stroke="var(--line)" stroke-width="14"/>
+ <circle id="arc" cx="100" cy="100" r="88" fill="none" stroke="${col}" stroke-width="14" stroke-linecap="round" stroke-dasharray="552.9"/></svg>
+ <div class="num" id="sec">${Math.ceil(left)}</div></div>
+ <div><div class="nm"><h2>${p.ex.name}</h2>${heart(p.ex.id)}</div><p class="desc">${p.ex.desc}</p><div class="next">${nxt}</div></div></div>
+ <div class="ctl"><button id="back" aria-label="Vorherige Übung">⏮</button><button class="big" id="pp" aria-label="Pause">❚❚</button><button id="skip" aria-label="Überspringen">⏭</button></div>`;
+ $("#quit").onclick=stop;$("#pp").onclick=toggle;$("#skip").onclick=()=>next();
+ $("#back").onclick=()=>{let j=pi-1;while(j>0&&ph[j].type!=="work"&&ph[j].type!=="stretch")j--;go(Math.max(0,j))};
+ if(p.type==="work"){beep(1320,.35,.3);say("Los! "+p.ex.name)}
+ else if(p.type==="stretch"){beep(660,.3,.2);say(p.ex.name)}
+ else if(p.type==="cool")say("Training geschafft. Jetzt dehnen. Erste Dehnung: "+p.ex.name);
+ else if(p.type==="rest")say((p.ex.cat==="dehnen"?"Wechseln. ":"Pause. ")+"Als Nächstes: "+p.ex.name);
+ else say("Erste Übung: "+p.ex.name);
+ upd()}
+function upd(){const p=ph[pi];$("#sec").textContent=Math.max(0,Math.ceil(left));
+ $("#arc").style.strokeDashoffset=552.9*(1-left/p.dur);
+ const isA=x=>x.type==="work"||x.type==="stretch";
+ const done=ph.slice(0,pi).filter(isA).length+(isA(p)?1-left/p.dur:0);
+ $("#pg").style.width=(100*done/seq.length)+"%"}
+function next(){if(pi+1>=ph.length)return finish();go(pi+1)}
+function toggle(){paused=!paused;$("#pp").textContent=paused?"▶":"❚❚";$("#pp").setAttribute("aria-label",paused?"Weiter":"Pause");
+ $("#lab").textContent=paused?"Pausiert":LBL[ph[pi].type];try{ac&&ac.resume()}catch(e){}}
+function loop(t){if(!running)return;const dt=Math.min(.5,(t-last)/1000);last=t;
+ if(!paused){left-=dt;const c=Math.ceil(left);
+  if(c!==lastCeil){lastCeil=c;if(c>=1&&c<=3)beep(880)}
+  const p=ph[pi];if((p.type==="work"||p.type==="stretch")&&p.ex.sides&&!half&&left<=p.dur/2){half=true;beep(660,.25);say("Seite wechseln");
+   const l=$("#lab");l.textContent="Seite wechseln!";l.classList.add("flash")}
+  if(left<=0)next();else upd()}
+ requestAnimationFrame(loop)}
+function stop(){running=false;$("#pl").classList.remove("on");document.body.style.overflow="";try{wake&&wake.release();speechSynthesis.cancel()}catch(e){}}
+function finish(){running=false;beep(1046,.2);setTimeout(()=>beep(1318,.4),220);say("Geschafft! Super gemacht.");
+ let n=0;try{n=+(localStorage.getItem("fit15-done")||0)+1;localStorage.setItem("fit15-done",n)}catch(e){}
+ const [w]=iv();
+ $("#pl").innerHTML=`<div class="done"><h2>Geschafft!</h2><p>Stark – ein Workout mehr in den Beinen.</p>
+ <div class="stats"><div><b>${fmt((Date.now()-t0)/1000)}</b>Minuten</div><div><b>${plan.length}</b>Übungen</div>${strPlan.length?`<div><b>${strPlan.length}</b>Dehnungen</div>`:""}${n?`<div><b>${n}</b>Workouts gesamt</div>`:""}</div>
+ <button id="again">Nochmal</button><button class="ghost" id="home">Zur Übersicht</button></div>`;
+ $("#again").onclick=start;$("#home").onclick=()=>{stop();build()}}
+$("#start").addEventListener("click",start);
+
+renderSeg();build();
+if("serviceWorker" in navigator&&location.protocol.startsWith("http")){addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{})})}
+}
+</script>
+</body>
+</html>
